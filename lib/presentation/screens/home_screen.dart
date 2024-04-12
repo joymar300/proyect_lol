@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:proyect_lol/config/constants/environment.dart';
 import 'package:proyect_lol/domain/entities/champ.dart';
@@ -17,9 +18,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeView extends ConsumerStatefulWidget {
-  const _HomeView({
-    super.key,
-  });
+  const _HomeView();
 
   @override
   _HomeViewState createState() => _HomeViewState();
@@ -38,12 +37,26 @@ class _HomeViewState extends ConsumerState<_HomeView> {
     final champPro = ref.watch(championProvider);
     return champPro.when(
         data: (champions) {
-          return ListView.builder(
-            itemCount: champions.length,
-            itemBuilder: (BuildContext context, int index) {
+          return GridView.custom(
+            gridDelegate: SliverWovenGridDelegate.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 2,
+             crossAxisSpacing: 8,
+             pattern: const [
+              WovenGridTile(1),
+              WovenGridTile(
+                5 / 7,
+                crossAxisRatio: 0.9,
+                alignment: AlignmentDirectional.centerEnd,
+              ),
+             ]
+            ),
+            //itemCount: champions.length,
+            
+            childrenDelegate:SliverChildBuilderDelegate( (BuildContext context, int index) {
               final champ = champions[index];
               return _ShowData(champ: champ);
-            },
+            },),
           );
         },
         error: (error, stackTrace) => Text('Error: $error'),
@@ -55,7 +68,6 @@ class _HomeViewState extends ConsumerState<_HomeView> {
 
 class _ShowData extends StatelessWidget {
   const _ShowData({
-    super.key,
     required this.champ,
   });
 
@@ -71,7 +83,7 @@ class _ShowData extends StatelessWidget {
         child: Column(
           children: [
             Image.network(
-              "http://ddragon.leagueoflegends.com/cdn/13.16.1/img/champion/${champ.image.full}",
+              "http://ddragon.leagueoflegends.com/cdn/${champ.version}/img/champion/${champ.image.full}",
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress != null) {
                   return const Center(

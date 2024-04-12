@@ -11,7 +11,7 @@ String champsToJson(Champs data) => json.encode(data.toJson());
 class Champs {
   final Type type;
   final String format;
-  final Version version;
+  final String version;
   final Map<String, Datum> data;
 
   Champs({
@@ -24,7 +24,8 @@ class Champs {
   factory Champs.fromJson(Map<String, dynamic> json) => Champs(
         type: typeValues.map[json["type"]]!,
         format: json["format"],
-        version: versionValues.map[json["version"]]!,
+        // version: versionValues.map[json["version"]]!,
+        version: json["version"],
         data: Map.from(json["data"])
             .map((k, v) => MapEntry<String, Datum>(k, Datum.fromJson(v))),
       );

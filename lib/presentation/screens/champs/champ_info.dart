@@ -1,10 +1,12 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
+
 import 'package:proyect_lol/domain/entities/champ_info.dart';
 import 'package:proyect_lol/presentation/providers/champs/champ_info_provider.dart';
+import 'package:proyect_lol/presentation/screens/champs/views/abiliys_champ.dart';
+import 'package:proyect_lol/presentation/screens/champs/views/about_champ.dart';
+import 'package:proyect_lol/presentation/screens/champs/views/skins_champ.dart';
 
 class ChampInfoScreen extends ConsumerStatefulWidget {
   static String name = 'Champ-info-screen';
@@ -25,6 +27,8 @@ class ChampInfoScreenState extends ConsumerState<ChampInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
     final Champion? champ = ref.watch(champInfoProvider)[widget.champId];
     if (champ == null) {
       return const Scaffold(
@@ -38,7 +42,8 @@ class ChampInfoScreenState extends ConsumerState<ChampInfoScreen> {
           _CustomSliverAppBar(champ: champ),
           SliverList(
               delegate: SliverChildBuilderDelegate(
-            (context, index) => _ChampDetails(champ: champ),
+            (context, index) => SizedBox(height: size.height , 
+            child: NavinfoChamp(champ: champ)),
             childCount: 1,
           ))
         ],
@@ -47,9 +52,39 @@ class ChampInfoScreenState extends ConsumerState<ChampInfoScreen> {
   }
 }
 
+class NavinfoChamp extends StatelessWidget {
+  const NavinfoChamp({
+    super.key,
+    required this.champ,
+  });
+
+  final Champion champ;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3, 
+      child: Scaffold( 
+        appBar:  const TabBar(tabs: [
+          Tab(text: "About",),
+          Tab(text: "abilities",),
+          Tab(text: "Skins",),
+
+        ]),
+        body: TabBarView(children: [
+          
+          ChampDetails(champ: champ),
+          ChampAbilities(spells: champ.spells,champasive: champ.passive,),
+          SkinView(skin: champ.skins, champName: champ.id),
+        ]),
+
+    ));
+  }
+}
+
 class _CustomSliverAppBar extends ConsumerWidget {
   final Champion champ;
-  const _CustomSliverAppBar({required this.champ, super.key});
+  const _CustomSliverAppBar({required this.champ});
 
   @override
   Widget build(BuildContext context, ref) {
@@ -89,16 +124,18 @@ class _CustomSliverAppBar extends ConsumerWidget {
 
 class _CustomGaradient extends StatelessWidget {
   final AlignmentGeometry begin;
-  final AlignmentGeometry end;
+  final AlignmentGeometry end = Alignment.centerRight;
   final List<double> stops;
   final List<Color> colors;
 
   const _CustomGaradient({
     required this.begin,
     required this.stops,
-    required this.colors,
-    this.end = Alignment.centerLeft,
-  });
+    required this.colors,  
+   
+    
+  } 
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -111,166 +148,7 @@ class _CustomGaradient extends StatelessWidget {
   }
 }
 
-class _ChampDetails extends StatelessWidget {
-  final Champion champ;
-  const _ChampDetails({super.key, required this.champ});
 
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final textStyle = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            champ.lore,
-            style: textStyle.bodyMedium,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            champ.blurb,
-            style: textStyle.bodyMedium,
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Text(
-          'Skins',
-          style: textStyle.titleLarge,
-        ),
-        const SizedBox(height: 20),
-        _SkinView(skin: champ.skins, champName: champ.id),
-      ],
-    );
-  }
-}
 
-class _SkinView extends StatefulWidget {
-  final String champName;
-  final List<ChampionSkin> skin;
-  const _SkinView({
-    super.key,
-    required this.skin,
-    required this.champName,
-  });
 
-  @override
-  State<_SkinView> createState() => _SkinViewState();
-}
 
-class _SkinViewState extends State<_SkinView> {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 500,
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.skin.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.network(
-                          'http://ddragon.leagueoflegends.com/cdn/img/champion/splash/${widget.champName}_${widget.skin[index].num}.jpg',
-                          fit: BoxFit.cover,
-                          width: 300,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress != null) {
-                              return const Center(
-                                  child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              ));
-                            }
-                            return GestureDetector(
-                                onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) => GallerySkins(
-                                            skin: widget.skin,
-                                            champName: widget.champName,
-                                            indexpage: index))),
-                                child: FadeIn(child: child));
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-
-                // ListTile(
-                //   onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                //       builder: (_) => GallerySkins(
-                //           skin: widget.skin,
-                //           champName: widget.champName,
-                //           indexpage: index))),
-                //   title: Image.network(
-                //     'http://ddragon.leagueoflegends.com/cdn/img/champion/splash/${widget.champName}_${widget.skin[index].num}.jpg',
-                //     fit: BoxFit.cover,
-                //   ),
-                // );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class GallerySkins extends StatefulWidget {
-  final PageController pageController;
-  final int indexpage;
-  final String champName;
-  final List<ChampionSkin> skin;
-
-  GallerySkins(
-      {required this.skin, required this.champName, this.indexpage = 0})
-      : pageController = PageController(initialPage: indexpage);
-
-  @override
-  State<GallerySkins> createState() => _GallerySkinsState();
-}
-
-class _GallerySkinsState extends State<GallerySkins> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar:
-          AppBar(backgroundColor: Colors.black, foregroundColor: Colors.white),
-      body: PhotoViewGallery.builder(
-        loadingBuilder: (context, event) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        },
-        scrollPhysics: const BouncingScrollPhysics(),
-        pageController: widget.pageController,
-        itemCount: widget.skin.length,
-        builder: (context, index) {
-          final skinsUrl =
-              'http://ddragon.leagueoflegends.com/cdn/img/champion/splash/${widget.champName}_${widget.skin[index].num}.jpg';
-          return PhotoViewGalleryPageOptions(
-              imageProvider: NetworkImage(skinsUrl));
-        },
-      ),
-    );
-  }
-}
