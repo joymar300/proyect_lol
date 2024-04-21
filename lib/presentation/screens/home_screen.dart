@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:proyect_lol/config/constants/environment.dart';
+
 import 'package:proyect_lol/domain/entities/champ.dart';
+import 'package:proyect_lol/presentation/delegate/searchbarChamp.dart';
+
 import 'package:proyect_lol/presentation/providers/champs/champs_providers.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends  ConsumerWidget {
   static const name = 'home-Screen';
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: _HomeView());
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(appBar: AppBar(title: const Text("L proyect"), actions: [IconButton(onPressed: (){
+      showSearch(context: context, delegate: SearchChampLolDelegate(champions: ref.watch(championProvider).value!));
+    }, icon: const Icon(Icons.search))],), body: const _HomeView());
   }
 }
 

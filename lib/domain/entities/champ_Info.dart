@@ -20,7 +20,8 @@ class Champion {
   List<dynamic> recommended;
 
   Champion(
-      {required this.id,
+      {
+      required this.id,
       required this.key,
       required this.name,
       required this.title,
@@ -36,7 +37,8 @@ class Champion {
       required this.stats,
       required this.spells,
       required this.passive,
-      required this.recommended});
+      required this.recommended
+      });
 }
 
 class ChampionImage {
